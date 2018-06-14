@@ -17,10 +17,8 @@ RUN apk update && \
 RUN docker-php-ext-install \
                     mcrypt \
                     pdo_mysql \
-                    zip
-
-
- 
+                    zip \
+                    pcntl
 
 RUN docker-php-ext-configure gd \
         --enable-gd-native-ttf \
