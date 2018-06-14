@@ -1,4 +1,4 @@
-FROM php:7.1-fpm-alpine
+FROM php:7.2-fpm-alpine
 
 RUN apk update && \
     apk add \
@@ -14,8 +14,19 @@ RUN apk update && \
         g++ \
         make
 
+#####################################
+# MongoDB:
+#####################################
+
+RUN pecl install mongodb && \
+    docker-php-ext-enable mongodb   
+#####################################
+# Mcrypt:
+#####################################
+RUN pecl install mcrypt-1.0.1 && \
+    docker-php-ext-enable mcrypt
+
 RUN docker-php-ext-install \
-                    mcrypt \
                     pdo_mysql \
                     zip \
                     pcntl
@@ -26,12 +37,7 @@ RUN docker-php-ext-configure gd \
         --with-freetype-dir=/usr/include/freetype2 && \
     docker-php-ext-install gd
 
-#####################################
-# MongoDB:
-#####################################
-
-RUN pecl install mongodb && \
-    docker-php-ext-enable mongodb    
+ 
 
 ADD ./php.ini /usr/local/etc/php/conf.d
 ADD ./php.pool.conf /usr/local/etc/php-fpm.d/
