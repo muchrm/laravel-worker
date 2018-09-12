@@ -1,53 +1,4 @@
-FROM php:7.2-fpm-alpine
-
-RUN apk update && \
-    apk add \
-        curl \
-        libmemcached-dev \
-        zlib-dev \
-        libjpeg-turbo-dev \
-        libpng-dev \
-        freetype-dev \
-        openssl-dev \
-        libmcrypt-dev \
-        autoconf \
-        g++ \
-        make
-
-#####################################
-# MongoDB:
-#####################################
-
-RUN pecl install mongodb && \
-    docker-php-ext-enable mongodb   
-#####################################
-# Mcrypt:
-#####################################
-RUN pecl install mcrypt-1.0.1 && \
-    docker-php-ext-enable mcrypt
-
-RUN docker-php-ext-install \
-                    pdo_mysql \
-                    zip \
-                    pcntl
-
-RUN docker-php-ext-configure gd \
-        --enable-gd-native-ttf \
-        --with-jpeg-dir=/usr/lib \
-        --with-freetype-dir=/usr/include/freetype2 && \
-    docker-php-ext-install gd
-
- 
-
-ADD ./php.ini /usr/local/etc/php/conf.d
-ADD ./php.pool.conf /usr/local/etc/php-fpm.d/
-
-RUN rm -rf /var/cache/apk/* \
-    && find / -type f -iname \*.apk-new -delete \
-    && rm -rf /var/cache/apk/*
-
-WORKDIR /var/www/html
-RUN deluser www-data && adduser -D -H -u 1000 -s /bin/bash www-data
+FROM muchrm/science-php
 
 #install composer
 RUN curl -s http://getcomposer.org/installer | php && mv ./composer.phar /usr/local/bin/composer
@@ -65,8 +16,11 @@ ADD supervisord.conf /etc/supervisord.conf
 ADD start.sh /start.sh
 RUN chmod +x /start.sh
 
+RUN rm -rf /var/cache/apk/* \
+    && find / -type f -iname \*.apk-new -delete \
+    && rm -rf /var/cache/apk/*
+
 EXPOSE 9000 443 80
-
 STOPSIGNAL SIGTERM
-
+WORKDIR /var/www/html
 CMD ["sh","/start.sh"]
